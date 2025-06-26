@@ -21,13 +21,19 @@
   <div id="msg"></div>
 
   <script>
+
+    
     const liffId = "2007638338-kaVD7qVa";
     const postUrl = "https://script.google.com/macros/s/AKfycbylhEY1bmq7sC64aZ1hsgjYVMiTVKM-LeXmeNv64KN1RmBQr_sSXnLLJNznVpbVuURo/exec";
 
     async function init() {
       await liff.init({ liffId });
-      if (liff.isLoggedIn()) showForm();
-      document.getElementById("btnLogin").addEventListener("click", () => liff.login());
+      if (liff.isLoggedIn()) {
+        showForm();
+      } else {
+        document.getElementById("btnLogin").addEventListener("click", () => liff.login());
+      }
+
       document.getElementById("btnSubmit").addEventListener("click", sendData);
     }
 
@@ -40,7 +46,7 @@
     }
 
     async function sendData() {
-      const o = (id) => document.getElementById(id).value;
+      const o = id => document.getElementById(id).value;
       const payload = {
         licenseNo: o("licenseNo"),
         citizenId: o("citizenId"),
@@ -51,14 +57,21 @@
         userId: document.getElementById("userId").textContent,
         displayName: document.getElementById("displayName").textContent
       };
-      const resp = await fetch(postUrl, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      if (resp.ok) {
-        document.getElementById("msg").textContent = "บันทึกข้อมูลเรียบร้อยครับ 🎉";
-      } else {
-        document.getElementById("msg").textContent = "เกิดข้อผิดพลาดในการส่งข้อมูล";
+
+      try {
+        const resp = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+          document.getElementById("msg").textContent = "✅ บันทึกข้อมูลเรียบร้อยแล้ว";
+        } else {
+          document.getElementById("msg").textContent = "❌ เกิดข้อผิดพลาดในการส่งข้อมูล";
+        }
+      } catch (err) {
+        document.getElementById("msg").textContent = "❌ ข้อผิดพลาด: " + err;
       }
     }
     init();
