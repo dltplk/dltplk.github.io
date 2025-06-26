@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ระบบสมัครใบอนุญาต</title>
+  <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+</head>
+<body>
+  <h2>ลงทะเบียนข้อมูลใบอนุญาตผ่าน LINE</h2>
+  <button id="btnLogin">Login ด้วย LINE</button>
+  <div id="form" style="display:none;">
+    <p>LINE: <span id="displayName"></span> (<span id="userId"></span>)</p>
+    <label>เลขที่ใบอนุญาต: <input id="licenseNo"></label><br>
+    <label>เลขบัตรประชาชน: <input id="citizenId"></label><br>
+    <label>ชื่อ‑สกุล: <input id="fullName"></label><br>
+    <label>ประเภทประกอบการ: <input id="businessType"></label><br>
+    <label>วันที่อนุญาต: <input id="approveDate" type="date"></label><br>
+    <label>วันหมดอายุ: <input id="expireDate" type="date"></label><br>
+    <button id="btnSubmit">ส่งข้อมูล</button>
+  </div>
+  <div id="msg"></div>
+
+  <script>
+    const liffId = "YOUR_LIFF_ID";
+    const postUrl = "https://script.google.com/macros/s/AKfycbxW7wteBIVzVTVUMPSuzDLOgecN1ev-YC7GwbzwdP_xqz7E_jZLcL06iHf0dAPKnQcr/exec";
+
+    async function init() {
+      await liff.init({ liffId });
+      if (liff.isLoggedIn()) showForm();
+      document.getElementById("btnLogin").addEventListener("click", () => liff.login());
+      document.getElementById("btnSubmit").addEventListener("click", sendData);
+    }
+
+    async function showForm() {
+      const profile = await liff.getProfile();
+      document.getElementById("displayName").textContent = profile.displayName;
+      document.getElementById("userId").textContent = profile.userId;
+      document.getElementById("form").style.display = "block";
+      document.getElementById("btnLogin").style.display = "none";
+    }
+
+    async function sendData() {
+      const o = (id) => document.getElementById(id).value;
+      const payload = {
+        licenseNo: o("licenseNo"),
+        citizenId: o("citizenId"),
+        fullName: o("fullName"),
+        businessType: o("businessType"),
+        approveDate: o("approveDate"),
+        expireDate: o("expireDate"),
+        userId: document.getElementById("userId").textContent,
+        displayName: document.getElementById("displayName").textContent
+      };
+      const resp = await fetch(postUrl, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      if (resp.ok) {
+        document.getElementById("msg").textContent = "บันทึกข้อมูลเรียบร้อยครับ 🎉";
+      } else {
+        document.getElementById("msg").textContent = "เกิดข้อผิดพลาดในการส่งข้อมูล";
+      }
+    }
+    init();
+  </script>
+</body>
+</html>
